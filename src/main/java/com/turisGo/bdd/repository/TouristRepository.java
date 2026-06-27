@@ -1,15 +1,17 @@
 package com.turisGo.bdd.repository;
 
-import com.turisGo.bdd.model.Tourist;
-import org.springframework.stereotype.Repository;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.time.LocalDate;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.sql.Date;
+import com.turisGo.bdd.model.Tourist;
 
 @Repository
 public class TouristRepository {
@@ -23,6 +25,8 @@ public class TouristRepository {
     public void saveTourist(Tourist tourist) {
         String sqlUser = "INSERT INTO users (name, email, password, registration_date) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        tourist.setRegistrationDate(LocalDate.now());
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS);

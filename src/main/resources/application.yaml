@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: Diogo0104!
-    url: jdbc:mysql://localhost:3306/turisgo_bd?serverTimeZone=UTC
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
 
 
   flyway:
