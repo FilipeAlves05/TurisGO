@@ -1,6 +1,8 @@
 package com.turisGo.bdd.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User {
     private Integer id;
@@ -8,6 +10,7 @@ public class User {
     private String email;
     private String password;
     private LocalDate registrationDate;
+    private List<String> contacts = new ArrayList<>();
 
     public User() {
 
@@ -51,6 +54,14 @@ public class User {
 
     public void setRegistrationDate(LocalDate registrationDate) {
         this.registrationDate = registrationDate;
+    }
+
+    public List<String> getContacts() {
+        return this.contacts;
+    }
+
+    public void setContacts(List<String> contacts) {
+        this.contacts = contacts;
     }
 
 }
