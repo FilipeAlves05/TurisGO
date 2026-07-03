@@ -3,6 +3,9 @@ package com.turisGo.bdd.controller;
 import com.turisGo.bdd.model.Tourist;
 import com.turisGo.bdd.repository.TouristRepository;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/tourists")
@@ -19,4 +22,15 @@ public class TouristController {
         return "Turista cadastrado com sucesso nas tabelas users e tourists.";
     }
 
+    @GetMapping
+    public List<Tourist> getAllTourist() {
+        return touristRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Tourist> getTourist(@PathVariable int id) {
+        return touristRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

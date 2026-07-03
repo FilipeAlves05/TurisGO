@@ -101,8 +101,47 @@ public class CheckInRepository {
         checkIn.setAttractionId(request.getAttractionId());
         checkIn.setValidatorInstituionId(instituionId);
 
-        Tourist updatedTourist = touristRepository.findById(request.getTouristId().orElseThrow());
+        Tourist updatedTourist = touristRepository.findById(request.getTouristId()).orElseThrow();
 
         return new CheckInResult(checkIn, amount, updatedTourist.getTotalPoints(), updatedTourist.getLevel());
+    }
+
+    public void checkAndGrantMilestoneAchievements(int touristId) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM check_ins WHERE tourist_id = ?",
+                Integer.class, touristId);
+
+        if (count == null) {
+            return;
+        }
+
+        if (count == 1) {
+            grantIfExists(touristId, "Primeiro check-in");
+        } else if (count == 10) {
+            grantIfExists(touristId, "Explorador");
+        } else if (count == 50) {
+            grantIfExists(touristId, "Aventureiro");
+        }
+    }
+
+    private void grantIfExists(int touristId, String achievementName) {
+        achievementRepository.findByName(achievementName)
+                .ifPresent(a -> touristAchievementRepository.grant(touristId, a.getId()));
+    }
+
+    public List<CheckIn> findByTourist(int touristId) {
+        return jdbcTemplate.query("SELECT * FROM check_ins WHERE tourist_id = ?", ROW_MAPPER, touristId);
+    }
+
+    public List<CheckIn> findByAttraction(int attractionId) {
+        return jdbcTemplate.query("SELECT * FROM check_ins WHERE attraction_id = ?", ROW_MAPPER, attractionId);
+    }
+
+    public List<CheckIn> findAll() {
+        return jdbcTemplate.query("SELECT * FROM check_ins", ROW_MAPPER);
+    }
+
+    public Optional<CheckIn> findById(int id) {
+        List<CheckIn> result = jdbcTemplate.query("SELECT * FROM check_ins WHERE check_in_id = ?", ROW_MAPPER, id);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 }

@@ -59,4 +59,8 @@ public class AchievementRepository {
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 
+    public Optional<Achievement> findByName(String name) {
+        List<Achievement> result = jdbcTemplate.query("SELECT * FROM achievements WHERE name = ?", ROW_MAPPER, name);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+    }
 }
