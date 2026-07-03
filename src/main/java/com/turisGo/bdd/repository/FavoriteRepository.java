@@ -40,16 +40,16 @@ public class FavoriteRepository {
 
     public boolean toggleFavoriteAttraction(int touristId, int attractionId) {
         Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM tourist_favorite_attraction WHERE tourist_id = ? AND attraction_id = ?",
+                "SELECT COUNT(*) FROM tourist_favorite_attractions WHERE tourist_id = ? AND attraction_id = ?",
                 Integer.class, touristId, attractionId);
 
         if (count != null && count > 0) {
-            jdbcTemplate.update("DELETE FROM tourist_favorite_attraction WHERE tourist_id = ? AND attraction_id = ?",
+            jdbcTemplate.update("DELETE FROM tourist_favorite_attractions WHERE tourist_id = ? AND attraction_id = ?",
                     touristId, attractionId);
             return false;
         }
 
-        jdbcTemplate.update("INSERT INTO tourist_favorite_attraction (tourist_id, attraction_id) VALUES (?, ?)",
+        jdbcTemplate.update("INSERT INTO tourist_favorite_attractions (tourist_id, attraction_id) VALUES (?, ?)",
                 touristId, attractionId);
         return true;
     }
@@ -63,7 +63,7 @@ public class FavoriteRepository {
 
     public List<TouristAttraction> listFavoriteAttractions(int touristId) {
         List<Integer> ids = jdbcTemplate.query(
-                "SELECT attraction_id FROM tourist_favorite_attraction WHERE tourist_id = ?",
+                "SELECT attraction_id FROM tourist_favorite_attractions WHERE tourist_id = ?",
                 (rs, rowNum) -> rs.getInt("attraction_id"), touristId);
         return ids.stream().map(id -> attractionRepository.findById(id).orElse(null)).filter(java.util.Objects::nonNull)
                 .toList();

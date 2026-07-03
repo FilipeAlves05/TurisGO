@@ -35,7 +35,7 @@ public class CheckInRepository {
         checkIn.setAttractionId(rs.getInt("attraction_id"));
         checkIn.setDateTime(rs.getTimestamp("date_time").toLocalDateTime());
         checkIn.setGeolocation(rs.getString("geolocation"));
-        checkIn.setValidatorInstituionId(rs.getObject("validador_institution_id", Integer.class));
+        checkIn.setValidatorInstituionId(rs.getObject("validator_institution_id", Integer.class));
         return checkIn;
     };
 
@@ -57,7 +57,7 @@ public class CheckInRepository {
         }
 
         Integer instituionId = jdbcTemplate.queryForObject(
-                "SELECT instituion_id FROM tourist_attractions WHERE attraction_id = ?", Integer.class,
+                "SELECT institution_id FROM tourist_attractions WHERE attraction_id = ?", Integer.class,
                 request.getAttractionId());
 
         LocalDateTime now = LocalDateTime.now();

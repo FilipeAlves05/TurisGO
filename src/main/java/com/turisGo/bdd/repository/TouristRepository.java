@@ -20,7 +20,7 @@ import com.turisGo.bdd.model.Tourist;
 public class TouristRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    private static final String JOIN_SELECT = "SELECT u.*m t.birth_date, t.total_points, t.level FROM users u JOIN tourists t ON u.id = t.user_id";
+    private static final String JOIN_SELECT = "SELECT u.*, t.birth_date, t.total_points, t.level FROM users u JOIN tourists t ON u.id = t.user_id";
 
     private static final RowMapper<Tourist> TOURIST_ROW_MAPPER = (rs, rowNum) -> {
         Tourist tourist = new Tourist();
@@ -78,7 +78,7 @@ public class TouristRepository {
 
     public void addPoints(int touristId, int amount) {
         String sql = "UPDATE tourists SET total_points = total_points + ?, "
-                + "level = 1 +FLOOR((total_points + ?) / 100 WHERE user_id = ?";
+                + "level = 1 +FLOOR((total_points + ?)) / 100 WHERE user_id = ?";
         jdbcTemplate.update(sql, amount, amount, touristId);
     }
 }
