@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import com.turisGo.bdd.model.Institution;
 @Repository
 public class InstitutionRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     private static final String JOIN_SELECT = "SELECT u.*, i.cnpj FROM users u JOIN institutions i ON u.id = i.user_id";
 
@@ -33,21 +35,29 @@ public class InstitutionRepository {
         return institution;
     };
 
-    public InstitutionRepository(JdbcTemplate jdbcTemplate) {
+    public InstitutionRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
         this.jdbcTemplate = jdbcTemplate;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public void saveInstitution(Institution institution) {
+        Integer existing = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users WHERE email = ?", Integer.class,
+                institution.getEmail());
+        if (existing != null && existing > 0) {
+            throw new IllegalStateException("Já existe um usuário cadastrado com este e-mail.");
+        }
+
         String sqlUser = "INSERT INTO users(name, email, password, registration_date) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         institution.setRegistrationDate(LocalDate.now());
+        String hashedPassword = passwordEncoder.encode(institution.getPassword());
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, institution.getName());
             ps.setString(2, institution.getEmail());
-            ps.setString(3, institution.getPassword());
+            ps.setString(3, hashedPassword);
             ps.setDate(4, Date.valueOf(institution.getRegistrationDate()));
             return ps;
         }, keyHolder);

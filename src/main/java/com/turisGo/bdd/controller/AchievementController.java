@@ -1,8 +1,10 @@
 package com.turisGo.bdd.controller;
 
 import com.turisGo.bdd.model.Achievement;
+import com.turisGo.bdd.model.UserType;
 import com.turisGo.bdd.repository.AchievementRepository;
 import com.turisGo.bdd.repository.TouristAchievementRepository;
+import com.turisGo.bdd.security.RequireRole;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -19,6 +21,8 @@ public class AchievementController {
         this.touristAchievementRepository = touristAchievementRepository;
     }
 
+    // Cadastro de novos tipos de Conquista: tratado como conteúdo curado por Instituições.
+    @RequireRole(UserType.INSTITUTION)
     @PostMapping("/achievements")
     public Achievement create(@RequestBody Achievement achievement) {
         return achievementRepository.save(achievement);
@@ -36,6 +40,8 @@ public class AchievementController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Concessão manual de conquista (a concessão automática por metas já é feita internamente no check-in).
+    @RequireRole(UserType.INSTITUTION)
     @PostMapping("/tourists/{touristId}/achievements/{achievementId}")
     public ResponseEntity<String> grant(@PathVariable int touristId, @PathVariable int achievementId) {
         boolean granted = touristAchievementRepository.grant(touristId, achievementId);

@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,6 +20,7 @@ import com.turisGo.bdd.model.Tourist;
 @Repository
 public class TouristRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     private static final String JOIN_SELECT = "SELECT u.*, t.birth_date, t.total_points, t.level FROM users u JOIN tourists t ON u.id = t.user_id";
 
@@ -35,22 +37,30 @@ public class TouristRepository {
         return tourist;
     };
 
-    public TouristRepository(JdbcTemplate jdbcTemplate) {
+    public TouristRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
         this.jdbcTemplate = jdbcTemplate;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public void saveTourist(Tourist tourist) {
+        Integer existing = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users WHERE email = ?", Integer.class,
+                tourist.getEmail());
+        if (existing != null && existing > 0) {
+            throw new IllegalStateException("Já existe um usuário cadastrado com este e-mail.");
+        }
+
         String sqlUser = "INSERT INTO users (name, email, password, registration_date) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         tourist.setRegistrationDate(LocalDate.now());
+        String hashedPassword = passwordEncoder.encode(tourist.getPassword());
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, tourist.getName());
             ps.setString(2, tourist.getEmail());
-            ps.setString(3, tourist.getPassword());
+            ps.setString(3, hashedPassword);
             ps.setDate(4, Date.valueOf(tourist.getRegistrationDate()));
             return ps;
         }, keyHolder);
